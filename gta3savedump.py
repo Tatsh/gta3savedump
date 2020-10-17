@@ -1,10 +1,10 @@
+from dataclasses import dataclass
+from datetime import datetime
+from pprint import pp
+from struct import unpack
+from typing import Any, Optional, Sequence
 import json
 import sys
-from struct import unpack
-from dataclasses import dataclass
-from typing import Any, Optional, Sequence
-from pprint import pp
-from datetime import datetime
 
 SIZE_OF_ONE_GAME_IN_BYTES = 201729
 SIZE_OF_SIMPLEVARS = 0xBC
@@ -74,18 +74,27 @@ class CompileDateTime:
 @dataclass
 class Save:
     size: int
-    title: Optional[str] = None
-    system_time: Optional[datetime] = None
-    save_size: Optional[int] = None
+    camera: Optional[Camera] = None
+    clock: Optional[Clock] = None
+    compile_date_time: Optional[CompileDateTime] = None
     current_level: Optional[int] = None
     matrix: Optional[CameraMatrix] = None
-    clock: Optional[Clock] = None
     pad: Optional[Pad] = None
-    timer: Optional[Timer] = None
+    save_size: Optional[int] = None
+    system_time: Optional[datetime] = None
     time_step: Optional[TimeStep] = None
+    timer: Optional[Timer] = None
+    title: Optional[str] = None
     weather: Optional[Weather] = None
-    compile_date_time: Optional[CompileDateTime] = None
-    camera: Optional[Camera] = None
+
+
+class SaveEncoder(json.JSONEncoder):
+    def default(self, obj: Any):
+        if isinstance(obj, (float, int, str)):
+            return json.JSONEncoder.default(self, obj)
+        if isinstance(obj, datetime):
+            return obj.strftime('%c')
+        return obj.__dict__
 
 
 def main(filename: str) -> int:
@@ -126,22 +135,14 @@ def main(filename: str) -> int:
         # Restart points
         # Radar blips
         # Zones
-        # Gang Data
+        # Gang data
         # Car generators
         # Particles
-        # AudioScript objefcts
+        # AudioScript objects
         # Player info
         # Stats
         # Streaming stuff
         # PedType stuff
-
-        class SaveEncoder(json.JSONEncoder):
-            def default(self, obj: Any):
-                if isinstance(obj, (float, int, str)):
-                    return json.JSONEncoder.default(self, obj)
-                if isinstance(obj, datetime):
-                    return obj.strftime('%c')
-                return obj.__dict__
 
         print(json.dumps(save, cls=SaveEncoder, sort_keys=True, indent=2))
 
@@ -152,7 +153,7 @@ def command():
         try:
             main(name)
         except Exception as e:
-            print(f'Error processing {name}: {e}')
+            print(f'Error processing {name}: {e}', file=sys.stderr)
             code = 1
     return code
 
