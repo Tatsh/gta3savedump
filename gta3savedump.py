@@ -1,8 +1,8 @@
+import json
 import sys
 from struct import unpack
 from dataclasses import dataclass
-from typing import Optional, Sequence
-import json
+from typing import Any, Optional, Sequence
 from pprint import pp
 from datetime import datetime
 
@@ -110,6 +110,7 @@ def main(filename: str) -> int:
         save.camera = Camera(*unpack('<2I', f.read(8)))
         assert f.tell() == SIZE_OF_SIMPLEVARS
 
+        # TODO
         # Scripts
         # PedPool
         # Garages
@@ -131,8 +132,27 @@ def main(filename: str) -> int:
         # Streaming stuff
         # PedType stuff
 
-        pp(save.__dict__, indent=2, compact=True)
+        class SaveEncoder(json.JSONEncoder):
+            def default(self, obj: Any):
+                if isinstance(obj, (float, int, str)):
+                    return json.JSONEncoder.default(self, obj)
+                if isinstance(obj, datetime):
+                    return obj.strftime('%c')
+                return obj.__dict__
+
+        print(json.dumps(save, cls=SaveEncoder, sort_keys=True, indent=2))
+
+
+def command():
+    code = 0
+    for name in sys.argv[1:]:
+        try:
+            main(name)
+        except Exception as e:
+            print(f'Error processing {name}: {e}')
+            code = 1
+    return code
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1]))
+    sys.exit(command())
