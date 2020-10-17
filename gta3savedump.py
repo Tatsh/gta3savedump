@@ -2,12 +2,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from pprint import pp
 from struct import unpack
-from typing import Any, Optional, Sequence
+from typing import Any, Final, Optional, Sequence
 import json
 import sys
 
-SIZE_OF_ONE_GAME_IN_BYTES = 201729
-SIZE_OF_SIMPLEVARS = 0xBC
+SIZE_OF_ONE_GAME_IN_BYTES: Final = 201729
+SIZE_OF_SIMPLEVARS: Final = 0xBC
 
 
 @dataclass
@@ -89,7 +89,7 @@ class Save:
 
 
 class SaveEncoder(json.JSONEncoder):
-    def default(self, obj: Any):
+    def default(self, obj: Any) -> Any:
         if isinstance(obj, (float, int, str)):
             return json.JSONEncoder.default(self, obj)
         if isinstance(obj, datetime):
@@ -97,7 +97,7 @@ class SaveEncoder(json.JSONEncoder):
         return obj.__dict__
 
 
-def main(filename: str) -> int:
+def main(filename: str) -> None:
     with open(filename, 'rb') as f:
         save = Save(*unpack('<I', f.read(4)))
         save.title = f.read(48).decode('utf-16').split("'")[1]
@@ -147,7 +147,7 @@ def main(filename: str) -> int:
         print(json.dumps(save, cls=SaveEncoder, sort_keys=True, indent=2))
 
 
-def command():
+def command() -> int:
     code = 0
     for name in sys.argv[1:]:
         try:
