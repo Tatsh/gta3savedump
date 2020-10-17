@@ -9,6 +9,7 @@ from datetime import datetime
 SIZE_OF_ONE_GAME_IN_BYTES = 201729
 SIZE_OF_SIMPLEVARS = 0xBC
 
+
 @dataclass
 class CameraMatrix:
     position_x: float
@@ -59,6 +60,7 @@ class Weather:
     interpolation_value: int
     weather_type_in_list: Optional[int] = None
 
+
 @dataclass
 class CompileDateTime:
     n_second: int
@@ -67,6 +69,7 @@ class CompileDateTime:
     n_day: int
     n_month: int
     n_year: int
+
 
 @dataclass
 class Save:
